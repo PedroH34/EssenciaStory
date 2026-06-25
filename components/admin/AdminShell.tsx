@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Package, Tags } from 'lucide-react';
+import { Package, Tags, WandSparkles } from 'lucide-react';
 import { signOut } from '@/app/admin/actions';
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
@@ -29,6 +29,12 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold text-[#5f503f] hover:bg-[#f2e7d8]"
           >
             <Tags size={18} /> Categorias
+          </Link>
+          <Link
+            href="/admin/importar"
+            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold text-[#5f503f] hover:bg-[#f2e7d8]"
+          >
+            <WandSparkles size={18} /> Importar oferta
           </Link>
         </nav>
       </aside>
