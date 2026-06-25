@@ -6,16 +6,23 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'EssenciaStory | Ofertas selecionadas',
-    template: '%s | EssenciaStory',
+    default: 'Essência Store | Ofertas selecionadas',
+    template: '%s | Essência Store',
   },
   description:
-    'Ofertas selecionadas do Mercado Livre e Shopee, organizadas por categorias para compras rápidas e seguras.',
+    'Ofertas selecionadas de moda feminina e masculina, organizadas para compras rápidas e seguras.',
   openGraph: {
-    title: 'EssenciaStory',
-    description: 'Produtos em destaque, ofertas recentes e curadoria para afiliados.',
+    title: 'Essência Store',
+    description:
+      'Moda feminina e masculina em destaque, ofertas recentes e curadoria para afiliados.',
     url: siteUrl,
-    siteName: 'EssenciaStory',
+    siteName: 'Essência Store',
+    images: [
+      {
+        url: '/essencia-store-logo.png',
+        alt: 'Essência Store',
+      },
+    ],
     locale: 'pt_BR',
     type: 'website',
   },

@@ -8,12 +8,12 @@ export default function LoginPage() {
   const [state, action, pending] = useActionState(signIn, { message: '' });
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
+    <main className="flex min-h-screen items-center justify-center bg-[#f8f1e8] px-4">
       <form
         action={action}
-        className="w-full max-w-md rounded-md border border-slate-200 bg-white p-6 shadow-sm"
+        className="w-full max-w-md rounded-md border border-[#d8cbb8] bg-[#fffaf4] p-6 shadow-sm"
       >
-        <div className="flex h-12 w-12 items-center justify-center rounded-md bg-teal-50 text-teal-700">
+        <div className="flex h-12 w-12 items-center justify-center rounded-md bg-[#f2e7d8] text-[#7c684f]">
           <Lock size={22} />
         </div>
         <h1 className="mt-5 text-2xl font-black text-slate-950">Entrar no painel</h1>
@@ -46,7 +46,7 @@ export default function LoginPage() {
 
         <button
           disabled={pending}
-          className="mt-6 w-full rounded-md bg-teal-700 px-4 py-3 text-sm font-bold text-white hover:bg-teal-800 disabled:opacity-60"
+          className="mt-6 w-full rounded-md bg-[#7c684f] px-4 py-3 text-sm font-bold text-white hover:bg-[#4d4032] disabled:opacity-60"
         >
           {pending ? 'Entrando...' : 'Entrar'}
         </button>

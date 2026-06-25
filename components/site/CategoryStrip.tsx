@@ -7,11 +7,11 @@ export function CategoryStrip({ categories }: { categories: Category[] }) {
   }
 
   return (
-    <section id="categorias" className="border-b border-slate-200 bg-white">
+    <section id="categorias" className="border-b border-[#d8cbb8] bg-[#fffaf4]">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-4">
-          <h2 className="text-xl font-bold text-slate-950">Categorias</h2>
-          <Link href="/" className="text-sm font-semibold text-teal-700 hover:text-teal-900">
+          <h2 className="text-xl font-bold text-[#33291f]">Categorias</h2>
+          <Link href="/" className="text-sm font-semibold text-[#7c684f] hover:text-[#4d4032]">
             Ver todas
           </Link>
         </div>
@@ -20,7 +20,7 @@ export function CategoryStrip({ categories }: { categories: Category[] }) {
             <Link
               key={category.id}
               href={`/?categoria=${category.id}`}
-              className="whitespace-nowrap rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-teal-700 hover:text-teal-700"
+              className="whitespace-nowrap rounded-md border border-[#d8cbb8] px-4 py-2 text-sm font-semibold text-[#5f503f] transition hover:border-[#7c684f] hover:text-[#4d4032]"
             >
               {category.nome}
             </Link>

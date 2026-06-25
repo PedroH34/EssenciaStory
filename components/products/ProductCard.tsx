@@ -6,8 +6,8 @@ import { BuyButtons } from './BuyButtons';
 
 export function ProductCard({ product }: { product: Product }) {
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-md border border-slate-200 bg-white">
-      <Link href={`/produto/${product.slug}`} className="block bg-slate-100">
+    <article className="flex h-full flex-col overflow-hidden rounded-md border border-[#d8cbb8] bg-[#fffaf4]">
+      <Link href={`/produto/${product.slug}`} className="block bg-[#efe4d5]">
         <div className="relative aspect-square">
           {product.imagem ? (
             <Image src={product.imagem} alt={product.nome} fill className="object-cover" />
@@ -24,7 +24,7 @@ export function ProductCard({ product }: { product: Product }) {
         </div>
       </Link>
       <div className="flex flex-1 flex-col p-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-700">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#7c684f]">
           {product.categories?.nome ?? 'Oferta'}
         </p>
         <Link href={`/produto/${product.slug}`}>

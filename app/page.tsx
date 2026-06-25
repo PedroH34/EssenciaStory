@@ -31,10 +31,10 @@ export default async function Home({
           <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
             <div className="mb-6 flex items-end justify-between gap-4">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-700">
+                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#7c684f]">
                   Resultado
                 </p>
-                <h2 className="mt-2 text-2xl font-black text-slate-950">Produtos encontrados</h2>
+                <h2 className="mt-2 text-2xl font-black text-[#33291f]">Produtos encontrados</h2>
               </div>
             </div>
             <ProductGrid products={searchedProducts} />
@@ -43,20 +43,20 @@ export default async function Home({
 
         <section id="destaques" className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="mb-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-700">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#7c684f]">
               Seleção especial
             </p>
-            <h2 className="mt-2 text-2xl font-black text-slate-950">Produtos em destaque</h2>
+            <h2 className="mt-2 text-2xl font-black text-[#33291f]">Produtos em destaque</h2>
           </div>
           <ProductGrid products={featuredProducts} />
         </section>
 
         <section id="recentes" className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="mb-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-700">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#7c684f]">
               Novidades
             </p>
-            <h2 className="mt-2 text-2xl font-black text-slate-950">Produtos recentes</h2>
+            <h2 className="mt-2 text-2xl font-black text-[#33291f]">Produtos recentes</h2>
           </div>
           <ProductGrid products={recentProducts} />
         </section>

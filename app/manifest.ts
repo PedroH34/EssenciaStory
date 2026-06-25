@@ -2,13 +2,13 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'EssenciaStory',
-    short_name: 'EssenciaStory',
-    description: 'Ofertas selecionadas do Mercado Livre e Shopee.',
+    name: 'Essência Store',
+    short_name: 'Essência Store',
+    description: 'Ofertas selecionadas de moda feminina e masculina.',
     start_url: '/',
     display: 'standalone',
-    background_color: '#f7f8fb',
-    theme_color: '#0f766e',
+    background_color: '#f8f1e8',
+    theme_color: '#7c684f',
     icons: [
       {
         src: '/icon.svg',

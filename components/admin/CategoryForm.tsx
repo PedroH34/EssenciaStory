@@ -44,7 +44,7 @@ export function CategoryForm({ category }: { category?: Category }) {
               Excluir
             </button>
           ) : null}
-          <button className="rounded-md bg-teal-700 px-4 py-2 text-sm font-bold text-white hover:bg-teal-800">
+          <button className="rounded-md bg-[#7c684f] px-4 py-2 text-sm font-bold text-white hover:bg-[#4d4032]">
             Salvar
           </button>
         </div>

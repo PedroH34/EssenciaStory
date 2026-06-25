@@ -28,7 +28,7 @@ export function BuyButtons({ product }: { product: Product }) {
         <Link
           key={link.href}
           href={link.href}
-          className="inline-flex items-center justify-center gap-2 rounded-md bg-teal-700 px-4 py-3 text-sm font-bold text-white transition hover:bg-teal-800"
+          className="inline-flex items-center justify-center gap-2 rounded-md bg-[#7c684f] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#4d4032]"
           target="_blank"
           rel="nofollow sponsored noopener noreferrer"
         >

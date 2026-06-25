@@ -149,7 +149,7 @@ export function ProductForm({
       {state.message ? (
         <p
           className={
-            state.ok ? 'text-sm font-semibold text-teal-700' : 'text-sm font-semibold text-red-700'
+            state.ok ? 'text-sm font-semibold text-[#7c684f]' : 'text-sm font-semibold text-red-700'
           }
         >
           {state.message}
@@ -158,7 +158,7 @@ export function ProductForm({
 
       <button
         disabled={pending}
-        className="w-fit rounded-md bg-teal-700 px-5 py-3 text-sm font-bold text-white hover:bg-teal-800 disabled:opacity-60"
+        className="w-fit rounded-md bg-[#7c684f] px-5 py-3 text-sm font-bold text-white hover:bg-[#4d4032] disabled:opacity-60"
       >
         {pending ? 'Salvando...' : 'Salvar produto'}
       </button>

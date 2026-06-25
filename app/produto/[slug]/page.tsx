@@ -22,7 +22,7 @@ export async function generateMetadata({
 
   const description =
     product.descricao?.slice(0, 155) ??
-    `Veja detalhes e links de compra para ${product.nome} na EssenciaStory.`;
+    `Veja detalhes e links de compra para ${product.nome} na Essência Store.`;
 
   return {
     title: product.nome,
@@ -54,7 +54,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     <>
       <Header />
       <main>
-        <section className="border-b border-slate-200 bg-white">
+        <section className="border-b border-[#d8cbb8] bg-[#fffaf4]">
           <div className="mx-auto grid max-w-7xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_0.9fr] lg:px-8">
             <div className="grid gap-4">
               <div className="relative aspect-square overflow-hidden rounded-md bg-slate-100">
@@ -81,7 +81,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             </div>
 
             <div className="flex flex-col justify-center">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-700">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#7c684f]">
                 {product.categories?.nome ?? 'Oferta'}
               </p>
               <h1 className="mt-3 text-3xl font-black leading-tight text-slate-950 sm:text-4xl">
@@ -103,7 +103,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                 </p>
               ) : null}
               <p className="mt-6 leading-7 text-slate-700">
-                {product.descricao ?? 'Produto selecionado pela curadoria EssenciaStory.'}
+                {product.descricao ?? 'Produto selecionado pela curadoria Essência Store.'}
               </p>
               <div className="mt-8 max-w-sm">
                 <BuyButtons product={product} />
@@ -114,7 +114,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
         <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="mb-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-700">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#7c684f]">
               Continue vendo
             </p>
             <h2 className="mt-2 text-2xl font-black text-slate-950">Produtos relacionados</h2>

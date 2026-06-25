@@ -32,7 +32,7 @@ export default async function AdminProductsPage({
         </div>
         <Link
           href="/admin/produtos/novo"
-          className="inline-flex items-center justify-center gap-2 rounded-md bg-teal-700 px-4 py-3 text-sm font-bold text-white hover:bg-teal-800"
+          className="inline-flex items-center justify-center gap-2 rounded-md bg-[#7c684f] px-4 py-3 text-sm font-bold text-white hover:bg-[#4d4032]"
         >
           <Plus size={18} /> Novo produto
         </Link>
@@ -74,7 +74,7 @@ export default async function AdminProductsPage({
                   </td>
                   <td className="px-4 py-3 text-slate-700">{formatCurrency(product.preco)}</td>
                   <td className="px-4 py-3">
-                    <span className={product.ativo ? 'text-teal-700' : 'text-slate-500'}>
+                    <span className={product.ativo ? 'text-[#7c684f]' : 'text-slate-500'}>
                       {product.ativo ? 'Ativo' : 'Inativo'}
                     </span>
                   </td>
