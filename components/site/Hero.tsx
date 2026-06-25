@@ -35,12 +35,13 @@ export function Hero({ query }: { query?: string }) {
             </button>
           </form>
         </div>
-        <div className="relative min-h-80 overflow-hidden rounded-md border border-[#d8cbb8] bg-[#fffaf4] shadow-2xl">
+        <div className="relative flex min-h-80 items-center justify-center overflow-hidden rounded-md border border-[#d8cbb8] bg-[#f3e8d9] p-5 shadow-2xl">
           <Image
             src="/essencia-store-logo.png"
             alt="Essência Store"
-            fill
-            className="object-cover"
+            width={720}
+            height={720}
+            className="h-full max-h-[28rem] w-full object-contain"
             priority
           />
         </div>
