@@ -105,20 +105,73 @@ function pickTitle(html: string) {
   return match?.[1] ? decodeHtml(match[1]) : '';
 }
 
+function normalizePriceForInput(value: string) {
+  const parsed = parsePrice(value);
+
+  if (!parsed) {
+    return '';
+  }
+
+  return parsed.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+function pickFirstPriceCandidate(candidates: Array<string | undefined | null>) {
+  for (const candidate of candidates) {
+    if (!candidate) {
+      continue;
+    }
+
+    const normalized = normalizePriceForInput(candidate);
+
+    if (normalized) {
+      return normalized;
+    }
+  }
+
+  return '';
+}
+
 function pickPrice(html: string) {
   const metaPrice = pickMeta(html, [
     'product:price:amount',
+    'product:price',
     'og:price:amount',
+    'og:price',
     'twitter:data1',
     'price',
   ]);
 
   if (metaPrice) {
-    return metaPrice;
+    return normalizePriceForInput(metaPrice);
   }
 
-  const jsonPrice = html.match(/"price"\s*:\s*"?(\d+(?:[.,]\d{1,2})?)"?/i);
-  return jsonPrice?.[1] ?? '';
+  const jsonCandidates = [
+    html.match(/"price"\s*:\s*"?(\d+(?:[.,]\d{1,2})?)"?/i)?.[1],
+    html.match(/"priceAmount"\s*:\s*"?(\d+(?:[.,]\d{1,2})?)"?/i)?.[1],
+    html.match(/"sale_price"\s*:\s*"?(\d+(?:[.,]\d{1,2})?)"?/i)?.[1],
+    html.match(/"current_price"\s*:\s*"?(\d+(?:[.,]\d{1,2})?)"?/i)?.[1],
+    html.match(/"current_price"\s*:\s*\{[^}]*"value"\s*:\s*"?(\d+(?:[.,]\d{1,2})?)"?/i)?.[1],
+    html.match(/"price"\s*:\s*\{[^}]*"amount"\s*:\s*"?(\d+(?:[.,]\d{1,2})?)"?/i)?.[1],
+    html.match(/"price"\s*:\s*\{[^}]*"value"\s*:\s*"?(\d+(?:[.,]\d{1,2})?)"?/i)?.[1],
+    html.match(/"amount"\s*:\s*"?(\d+(?:[.,]\d{1,2})?)"?\s*,\s*"currency"\s*:\s*"BRL"/i)?.[1],
+    html.match(/"currency"\s*:\s*"BRL"\s*,\s*"amount"\s*:\s*"?(\d+(?:[.,]\d{1,2})?)"?/i)?.[1],
+  ];
+
+  const jsonPrice = pickFirstPriceCandidate(jsonCandidates);
+
+  if (jsonPrice) {
+    return jsonPrice;
+  }
+
+  const visiblePriceCandidates = Array.from(
+    html.matchAll(/R\$\s*([\d.]+,\d{2}|\d+(?:[.,]\d{1,2})?)/gi),
+    (match) => match[1],
+  );
+
+  return pickFirstPriceCandidate(visiblePriceCandidates);
 }
 
 function cleanTitle(title: string, marketplace: 'mercado_livre' | 'shopee') {
