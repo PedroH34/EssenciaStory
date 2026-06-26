@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import { notFound } from 'next/navigation';
+import { ProductGallery } from '@/components/products/ProductGallery';
 import { ProductGrid } from '@/components/products/ProductGrid';
 import { BuyButtons } from '@/components/products/BuyButtons';
 import { Footer } from '@/components/site/Footer';
@@ -58,29 +58,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       <main>
         <section className="border-b border-[#d8cbb8] bg-[#fffaf4]">
           <div className="mx-auto grid max-w-7xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_0.9fr] lg:px-8">
-            <div className="grid gap-4">
-              <div className="relative aspect-square overflow-hidden rounded-md bg-slate-100">
-                {product.imagem ? (
-                  <Image src={product.imagem} alt={product.nome} fill className="object-cover" />
-                ) : (
-                  <div className="flex h-full items-center justify-center text-slate-500">
-                    Imagem em breve
-                  </div>
-                )}
-              </div>
-              {gallery.length > 1 ? (
-                <div className="grid grid-cols-4 gap-3">
-                  {gallery.slice(0, 4).map((image) => (
-                    <div
-                      key={image}
-                      className="relative aspect-square overflow-hidden rounded bg-slate-100"
-                    >
-                      <Image src={image} alt={product.nome} fill className="object-cover" />
-                    </div>
-                  ))}
-                </div>
-              ) : null}
-            </div>
+            <ProductGallery images={gallery} name={product.nome} />
 
             <div className="flex flex-col justify-center">
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#7c684f]">
