@@ -5,10 +5,12 @@ import { createClient } from '@/lib/supabase/server';
 import { slugify } from '@/lib/utils';
 import { requireAdmin } from '@/services/admin-auth';
 
+type Marketplace = 'mercado_livre' | 'shopee';
+
 export type ImportPreview = {
   ok: boolean;
   message: string;
-  marketplace?: 'mercado_livre' | 'shopee';
+  marketplace?: Marketplace;
   originalUrl?: string;
   finalUrl?: string;
   nome?: string;
@@ -23,45 +25,43 @@ export type ImportCreateState = {
   productId?: string;
 };
 
-function formText(formData: FormData, key: string) {
-  const value = formData.get(key);
-  return typeof value === 'string' ? value.trim() : '';
+function nullableString(value: FormDataEntryValue | null) {
+  const text = typeof value === 'string' ? value.trim() : '';
+  return text.length ? text : null;
 }
 
-function nullableText(formData: FormData, key: string) {
-  const value = formText(formData, key);
-  return value.length ? value : null;
-}
+function nullableNumber(value: FormDataEntryValue | null) {
+  const text =
+    typeof value === 'string'
+      ? value
+          .replace(/[^\d,.]/g, '')
+          .replace(',', '.')
+          .trim()
+      : '';
+  if (!text.length) {
+    return null;
+  }
 
-function parsePrice(value: string) {
-  const normalized = value
-    .replace(/[^\d,.-]/g, '')
-    .replace(/\.(?=\d{3}(?:\D|$))/g, '')
-    .replace(',', '.');
-  const parsed = Number(normalized);
+  const parsed = Number(text);
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function detectMarketplace(url: string): 'mercado_livre' | 'shopee' | null {
-  try {
-    const hostname = new URL(url).hostname.toLowerCase();
+function checkbox(value: FormDataEntryValue | null) {
+  return value === 'on';
+}
 
-    if (
-      hostname.includes('mercadolivre') ||
-      hostname.includes('mercadolibre') ||
-      hostname.includes('meli.la')
-    ) {
-      return 'mercado_livre';
-    }
+function detectMarketplace(url: string): Marketplace | null {
+  const host = new URL(url).hostname.toLowerCase();
 
-    if (hostname.includes('shopee') || hostname.includes('s.shopee')) {
-      return 'shopee';
-    }
-
-    return null;
-  } catch {
-    return null;
+  if (host.includes('mercadolivre') || host.includes('mercadolibre') || host.includes('meli.la')) {
+    return 'mercado_livre';
   }
+
+  if (host.includes('shopee')) {
+    return 'shopee';
+  }
+
+  return null;
 }
 
 function decodeHtml(value: string) {
@@ -71,17 +71,21 @@ function decodeHtml(value: string) {
     .replace(/&#39;/g, "'")
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
-    .replace(/\s+/g, ' ')
     .trim();
 }
 
-function pickMeta(html: string, keys: string[]) {
-  for (const key of keys) {
+function findMeta(html: string, names: string[]) {
+  for (const name of names) {
+    const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const patterns = [
-      new RegExp(`<meta[^>]+property=["']${key}["'][^>]+content=["']([^"']+)["'][^>]*>`, 'i'),
-      new RegExp(`<meta[^>]+name=["']${key}["'][^>]+content=["']([^"']+)["'][^>]*>`, 'i'),
-      new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+property=["']${key}["'][^>]*>`, 'i'),
-      new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+name=["']${key}["'][^>]*>`, 'i'),
+      new RegExp(
+        `<meta[^>]+(?:property|name)=["']${escapedName}["'][^>]+content=["']([^"']+)["'][^>]*>`,
+        'i',
+      ),
+      new RegExp(
+        `<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${escapedName}["'][^>]*>`,
+        'i',
+      ),
     ];
 
     for (const pattern of patterns) {
@@ -95,97 +99,44 @@ function pickMeta(html: string, keys: string[]) {
   return '';
 }
 
-function pickTitle(html: string) {
-  const metaTitle = pickMeta(html, ['og:title', 'twitter:title']);
-  if (metaTitle) {
-    return metaTitle;
-  }
-
-  const match = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-  return match?.[1] ? decodeHtml(match[1]) : '';
+function findTitle(html: string) {
+  return (
+    findMeta(html, ['og:title', 'twitter:title']) ||
+    decodeHtml(html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1] ?? '')
+  );
 }
 
-function normalizePriceForInput(value: string) {
-  const parsed = parsePrice(value);
-
-  if (!parsed) {
-    return '';
-  }
-
-  return parsed.toLocaleString('pt-BR', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+function findImage(html: string) {
+  return findMeta(html, ['og:image', 'twitter:image', 'image']);
 }
 
-function pickFirstPriceCandidate(candidates: Array<string | undefined | null>) {
-  for (const candidate of candidates) {
-    if (!candidate) {
-      continue;
-    }
-
-    const normalized = normalizePriceForInput(candidate);
-
-    if (normalized) {
-      return normalized;
-    }
-  }
-
-  return '';
+function findDescription(html: string) {
+  return findMeta(html, ['og:description', 'twitter:description', 'description']);
 }
 
-function pickPrice(html: string) {
-  const metaPrice = pickMeta(html, [
+function findPrice(html: string) {
+  const metaPrice = findMeta(html, [
     'product:price:amount',
-    'product:price',
     'og:price:amount',
-    'og:price',
     'twitter:data1',
     'price',
   ]);
 
   if (metaPrice) {
-    return normalizePriceForInput(metaPrice);
+    const parsed = nullableNumber(metaPrice);
+    if (parsed) {
+      return String(parsed).replace('.', ',');
+    }
   }
 
-  const jsonCandidates = [
-    html.match(/"price"\s*:\s*"?(\d+(?:[.,]\d{1,2})?)"?/i)?.[1],
-    html.match(/"priceAmount"\s*:\s*"?(\d+(?:[.,]\d{1,2})?)"?/i)?.[1],
-    html.match(/"sale_price"\s*:\s*"?(\d+(?:[.,]\d{1,2})?)"?/i)?.[1],
-    html.match(/"current_price"\s*:\s*"?(\d+(?:[.,]\d{1,2})?)"?/i)?.[1],
-    html.match(/"current_price"\s*:\s*\{[^}]*"value"\s*:\s*"?(\d+(?:[.,]\d{1,2})?)"?/i)?.[1],
-    html.match(/"price"\s*:\s*\{[^}]*"amount"\s*:\s*"?(\d+(?:[.,]\d{1,2})?)"?/i)?.[1],
-    html.match(/"price"\s*:\s*\{[^}]*"value"\s*:\s*"?(\d+(?:[.,]\d{1,2})?)"?/i)?.[1],
-    html.match(/"amount"\s*:\s*"?(\d+(?:[.,]\d{1,2})?)"?\s*,\s*"currency"\s*:\s*"BRL"/i)?.[1],
-    html.match(/"currency"\s*:\s*"BRL"\s*,\s*"amount"\s*:\s*"?(\d+(?:[.,]\d{1,2})?)"?/i)?.[1],
-  ];
+  const text = html.replace(/\s+/g, ' ');
+  const matches = [...text.matchAll(/R\$\s?(\d{1,3}(?:\.\d{3})*,\d{2}|\d+,\d{2})/gi)];
+  const first = matches[0]?.[1];
 
-  const jsonPrice = pickFirstPriceCandidate(jsonCandidates);
-
-  if (jsonPrice) {
-    return jsonPrice;
-  }
-
-  const visiblePriceCandidates = Array.from(
-    html.matchAll(/R\$\s*([\d.]+,\d{2}|\d+(?:[.,]\d{1,2})?)/gi),
-    (match) => match[1],
-  );
-
-  return pickFirstPriceCandidate(visiblePriceCandidates);
+  return first ? first.replace(/\./g, '') : '';
 }
 
-function cleanTitle(title: string, marketplace: 'mercado_livre' | 'shopee') {
-  const suffixes =
-    marketplace === 'mercado_livre'
-      ? [/ \| Mercado Livre$/i, / - Mercado Livre$/i]
-      : [/ \| Shopee Brasil$/i, / \| Shopee$/i, / - Shopee$/i];
-
-  return suffixes.reduce((value, suffix) => value.replace(suffix, ''), title).trim();
-}
-
-async function uploadImage(formData: FormData) {
-  const file = formData.get('image_file');
-
+async function uploadImportedImage(file: FormDataEntryValue | null) {
   if (!(file instanceof File) || file.size === 0) {
     return null;
   }
@@ -215,57 +166,55 @@ export async function previewOffer(
 ): Promise<ImportPreview> {
   await requireAdmin();
 
-  const originalUrl = formText(formData, 'url');
-
+  const originalUrl = nullableString(formData.get('url'));
   if (!originalUrl) {
-    return { ok: false, message: 'Cole o link afiliado ou o link do produto.' };
+    return { ok: false, message: 'Cole o link da oferta.' };
   }
 
-  const marketplace = detectMarketplace(originalUrl);
+  let marketplace: Marketplace | null = null;
+  try {
+    marketplace = detectMarketplace(originalUrl);
+  } catch {
+    return { ok: false, message: 'Link invalido.' };
+  }
 
   if (!marketplace) {
-    return {
-      ok: false,
-      message: 'Não reconheci o marketplace. Use um link do Mercado Livre ou da Shopee.',
-      originalUrl,
-    };
+    return { ok: false, message: 'Use um link do Mercado Livre ou da Shopee.' };
   }
 
   try {
     const response = await fetch(originalUrl, {
       redirect: 'follow',
       headers: {
+        accept: 'text/html,application/xhtml+xml',
         'user-agent':
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36',
-        accept: 'text/html,application/xhtml+xml',
       },
     });
-
     const html = await response.text();
-    const title = cleanTitle(pickTitle(html), marketplace);
-    const description = pickMeta(html, ['og:description', 'description', 'twitter:description']);
-    const image = pickMeta(html, ['og:image', 'twitter:image', 'image']);
-    const price = pickPrice(html);
+    const finalUrl = response.url || originalUrl;
 
     return {
       ok: true,
-      message: title
-        ? 'Dados encontrados. Revise antes de criar o rascunho.'
-        : 'Link reconhecido, mas o marketplace não liberou todos os dados. Complete manualmente.',
+      message:
+        'Dados encontrados. Revise as informacoes antes de criar o produto, principalmente preco e imagem.',
       marketplace,
       originalUrl,
-      finalUrl: response.url,
-      nome: title,
-      descricao: description,
-      imagem: image,
-      preco: price,
+      finalUrl,
+      nome: findTitle(html)
+        .replace(/\s+\|\s+Mercado Livre.*$/i, '')
+        .trim(),
+      descricao: findDescription(html),
+      imagem: findImage(html),
+      preco: findPrice(html),
     };
   } catch {
     return {
       ok: true,
-      message: 'Link reconhecido, mas não consegui buscar os dados. Complete manualmente.',
+      message: 'Nao consegui ler a pagina automaticamente. Complete os dados manualmente.',
       marketplace,
       originalUrl,
+      finalUrl: originalUrl,
     };
   }
 }
@@ -276,45 +225,43 @@ export async function createImportedProduct(
 ): Promise<ImportCreateState> {
   await requireAdmin();
 
-  const marketplace = formText(formData, 'marketplace') as 'mercado_livre' | 'shopee';
-  const link = formText(formData, 'affiliate_url');
-  const nome = formText(formData, 'nome');
+  const nome = nullableString(formData.get('nome'));
+  const marketplace = nullableString(formData.get('marketplace')) as Marketplace | null;
+  const affiliateUrl = nullableString(formData.get('affiliate_url'));
 
-  if (!nome || !link || !['mercado_livre', 'shopee'].includes(marketplace)) {
-    return { ok: false, message: 'Informe link, marketplace e nome do produto.' };
+  if (!nome || !marketplace || !affiliateUrl) {
+    return { ok: false, message: 'Informe nome, marketplace e link afiliado.' };
   }
 
   try {
     const supabase = await createClient();
-    const uploadedImage = await uploadImage(formData);
-    const imageUrl = uploadedImage ?? nullableText(formData, 'imagem');
-    const preco = parsePrice(formText(formData, 'preco'));
-    const precoAntigo = parsePrice(formText(formData, 'preco_antigo'));
+    const uploadedImage = await uploadImportedImage(formData.get('image_file'));
+    const imagem = uploadedImage ?? nullableString(formData.get('imagem'));
+    const preco = nullableNumber(formData.get('preco'));
+    const precoAntigo = nullableNumber(formData.get('preco_antigo'));
     const desconto =
       preco && precoAntigo && precoAntigo > preco
         ? Math.round(((precoAntigo - preco) / precoAntigo) * 100)
         : null;
-    const slugBase = slugify(nome);
 
-    const { data, error } = await supabase
-      .from('products')
-      .insert({
-        nome,
-        descricao: nullableText(formData, 'descricao'),
-        categoria: nullableText(formData, 'categoria'),
-        imagem: imageUrl,
-        galeria: [],
-        preco,
-        preco_antigo: precoAntigo,
-        desconto,
-        mercado_livre_link: marketplace === 'mercado_livre' ? link : null,
-        shopee_link: marketplace === 'shopee' ? link : null,
-        ativo: formData.get('ativo') === 'on',
-        destaque: formData.get('destaque') === 'on',
-        slug: `${slugBase}-${Date.now().toString(36)}`,
-      })
-      .select('id')
-      .single();
+    const payload = {
+      nome,
+      descricao: nullableString(formData.get('descricao')),
+      categoria: nullableString(formData.get('categoria')),
+      imagem,
+      galeria: imagem ? [imagem] : [],
+      preco,
+      preco_antigo: precoAntigo,
+      desconto,
+      mercado_livre_link: marketplace === 'mercado_livre' ? affiliateUrl : null,
+      shopee_link: marketplace === 'shopee' ? affiliateUrl : null,
+      ativo: checkbox(formData.get('ativo')),
+      destaque: checkbox(formData.get('destaque')),
+      slug: slugify(nome),
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data, error } = await supabase.from('products').insert(payload).select('id').single();
 
     if (error) {
       return { ok: false, message: error.message };
@@ -325,13 +272,13 @@ export async function createImportedProduct(
 
     return {
       ok: true,
-      message: 'Produto importado como rascunho. Você já pode revisar no painel.',
-      productId: data.id,
+      message: 'Produto criado com sucesso.',
+      productId: data.id as string,
     };
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof Error ? error.message : 'Não foi possível importar a oferta.',
+      message: error instanceof Error ? error.message : 'Nao foi possivel criar o produto.',
     };
   }
 }

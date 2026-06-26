@@ -137,7 +137,7 @@ export function ProductForm({
 
       <div className="flex flex-wrap gap-5">
         <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-          <input name="ativo" type="checkbox" defaultChecked={product?.ativo ?? true} />
+          <input name="ativo" type="checkbox" defaultChecked={product?.ativo ?? false} />
           Produto ativo
         </label>
         <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ExternalLink, Search, Upload } from 'lucide-react';
@@ -33,6 +33,8 @@ export function OfferImporter({ categories }: { categories: Category[] }) {
     createImportedProduct,
     initialCreate,
   );
+  const [filePreview, setFilePreview] = useState('');
+  const previewImage = filePreview || preview.imagem;
 
   return (
     <div className="grid gap-6">
@@ -82,9 +84,16 @@ export function OfferImporter({ categories }: { categories: Category[] }) {
 
           <div className="flex flex-col gap-4 lg:flex-row">
             <div className="relative aspect-square w-full overflow-hidden rounded-md border border-[#d8cbb8] bg-[#f3e8d9] lg:w-64">
-              {preview.imagem ? (
+              {previewImage?.startsWith('blob:') ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={previewImage}
+                  alt={preview.nome ?? 'Oferta importada'}
+                  className="h-full w-full object-contain p-3"
+                />
+              ) : previewImage ? (
                 <Image
-                  src={preview.imagem}
+                  src={previewImage}
                   alt={preview.nome ?? 'Oferta importada'}
                   fill
                   className="object-contain p-3"
@@ -101,6 +110,9 @@ export function OfferImporter({ categories }: { categories: Category[] }) {
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7c684f]">
                   {marketplaceLabels[preview.marketplace]}
                 </p>
+                <span className="mt-2 inline-flex rounded bg-[#f2e7d8] px-2 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[#5f503f]">
+                  Marketplace detectado
+                </span>
                 {preview.finalUrl ? (
                   <Link
                     href={preview.finalUrl}
@@ -197,7 +209,16 @@ export function OfferImporter({ categories }: { categories: Category[] }) {
             </span>
             <span className="inline-flex items-center gap-2 rounded-md border border-dashed border-[#c9b99f] bg-white px-3 py-3 text-sm text-[#766857]">
               <Upload size={16} />
-              <input name="image_file" type="file" accept="image/*" className="w-full" />
+              <input
+                name="image_file"
+                type="file"
+                accept="image/*"
+                className="w-full"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  setFilePreview(file ? URL.createObjectURL(file) : '');
+                }}
+              />
             </span>
           </label>
 
@@ -226,6 +247,10 @@ export function OfferImporter({ categories }: { categories: Category[] }) {
                   {' '}
                   <Link href={`/admin/produtos/${createState.productId}`} className="underline">
                     Revisar produto
+                  </Link>
+                  {' · '}
+                  <Link href="/admin/importar" className="underline">
+                    Importar outro
                   </Link>
                 </>
               ) : null}

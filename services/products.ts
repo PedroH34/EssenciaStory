@@ -16,6 +16,7 @@ export type ProductFilters = {
   category?: string;
   limit?: number;
   onlyActive?: boolean;
+  excludeIds?: string[];
 };
 
 export async function getProducts(filters: ProductFilters = {}) {
@@ -41,6 +42,10 @@ export async function getProducts(filters: ProductFilters = {}) {
 
   if (filters.category) {
     query = query.eq('categoria', filters.category);
+  }
+
+  if (filters.excludeIds?.length) {
+    query = query.not('id', 'in', `(${filters.excludeIds.join(',')})`);
   }
 
   if (filters.limit) {

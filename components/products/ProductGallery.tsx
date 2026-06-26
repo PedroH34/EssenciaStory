@@ -1,45 +1,66 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Image from 'next/image';
 
-export function ProductGallery({ images, name }: { images: string[]; name: string }) {
+function uniqueImages(images: (string | null | undefined)[]) {
+  return images.filter((image, index): image is string => {
+    if (!image) {
+      return false;
+    }
+
+    return images.indexOf(image) === index;
+  });
+}
+
+export function ProductGallery({
+  productName,
+  image,
+  gallery,
+}: {
+  productName: string;
+  image?: string | null;
+  gallery?: string[] | null;
+}) {
+  const images = useMemo(() => uniqueImages([image, ...(gallery ?? [])]), [image, gallery]);
   const [selectedImage, setSelectedImage] = useState(images[0] ?? '');
 
   if (!images.length) {
     return (
-      <div className="flex aspect-square items-center justify-center rounded-md bg-slate-100 text-slate-500">
+      <div className="flex aspect-square items-center justify-center rounded-md border border-[#d8cbb8] bg-[#efe4d5] px-6 text-center text-sm text-[#766857]">
         Imagem em breve
       </div>
     );
   }
 
+  const activeImage = images.includes(selectedImage) ? selectedImage : images[0];
+
   return (
     <div className="grid gap-4">
-      <div className="relative aspect-square overflow-hidden rounded-md bg-slate-100">
-        <Image src={selectedImage} alt={name} fill className="object-cover" priority />
+      <div className="relative aspect-square overflow-hidden rounded-md border border-[#d8cbb8] bg-[#efe4d5]">
+        <Image src={activeImage} alt={productName} fill priority className="object-contain p-2" />
       </div>
 
       {images.length > 1 ? (
         <div className="grid grid-cols-4 gap-3 sm:grid-cols-5">
-          {images.slice(0, 10).map((image, index) => {
-            const isActive = image === selectedImage;
+          {images.map((galleryImage, index) => {
+            const isSelected = galleryImage === activeImage;
 
             return (
               <button
-                key={`${image}-${index}`}
+                key={`${galleryImage}-${index}`}
                 type="button"
-                onClick={() => setSelectedImage(image)}
-                aria-label={`Ver imagem ${index + 1} de ${name}`}
-                className={
-                  isActive
-                    ? 'relative aspect-square overflow-hidden rounded-md border-2 border-[#7c684f] bg-slate-100 ring-2 ring-[#d8cbb8]'
-                    : 'relative aspect-square overflow-hidden rounded-md border border-[#d8cbb8] bg-slate-100 transition hover:border-[#7c684f]'
-                }
+                onClick={() => setSelectedImage(galleryImage)}
+                aria-label={`Ver imagem ${index + 1}`}
+                className={`relative aspect-square overflow-hidden rounded-md border bg-[#efe4d5] transition ${
+                  isSelected
+                    ? 'border-[#7c684f] ring-2 ring-[#7c684f]'
+                    : 'border-[#d8cbb8] hover:border-[#7c684f]'
+                }`}
               >
                 <Image
-                  src={image}
-                  alt={`${name} - imagem ${index + 1}`}
+                  src={galleryImage}
+                  alt={`${productName} - imagem ${index + 1}`}
                   fill
                   className="object-cover"
                 />

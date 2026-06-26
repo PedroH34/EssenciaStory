@@ -11,10 +11,13 @@ export default async function Home({
   searchParams: Promise<{ q?: string; categoria?: string }>;
 }) {
   const params = await searchParams;
-  const [categories, featuredProducts, recentProducts, searchedProducts] = await Promise.all([
+  const [categories, featuredProducts] = await Promise.all([
     getCategories(),
     getFeaturedProducts(8),
-    getProducts({ limit: 12 }),
+  ]);
+  const featuredIds = featuredProducts.map((product) => product.id);
+  const [recentProducts, searchedProducts] = await Promise.all([
+    getProducts({ limit: 12, excludeIds: featuredIds }),
     params.q || params.categoria
       ? getProducts({ query: params.q, category: params.categoria, limit: 24 })
       : Promise.resolve(null),
