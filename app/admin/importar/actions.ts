@@ -303,7 +303,7 @@ export async function createImportedProduct(
         descricao: nullableText(formData, 'descricao'),
         categoria: nullableText(formData, 'categoria'),
         imagem: imageUrl,
-        galeria: imageUrl ? [imageUrl] : [],
+        galeria: [],
         preco,
         preco_antigo: precoAntigo,
         desconto,

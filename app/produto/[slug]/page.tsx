@@ -48,7 +48,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   }
 
   const relatedProducts = await getRelatedProducts(product);
-  const gallery = [product.imagem, ...(product.galeria ?? [])].filter(Boolean) as string[];
+  const gallery = Array.from(
+    new Set([product.imagem, ...(product.galeria ?? [])].filter(Boolean) as string[]),
+  );
 
   return (
     <>
